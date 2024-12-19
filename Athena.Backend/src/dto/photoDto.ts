@@ -1,16 +1,12 @@
-import { CommonDTO } from "./commonDto";
+import { CommonDTO } from './CommonDto';
 
-// Get one and all
+// Get
 export interface PhotoDTO extends CommonDTO {
-  id: string;
+    id: string;
 }
 
 // Create
 export interface CreatePhotoDTO extends CommonDTO {}
 
 // Update
-export interface UpdatePhotoDTO {
-  url?: string;
-  title?: string;
-  description?: string;
-}
+export interface UpdatePhotoDTO extends Partial<CommonDTO> {}

@@ -1,22 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Entity } from 'typeorm';
+import { CommonEntity } from './CommonEntity';
 
 @Entity()
-export class Videos {
-  @PrimaryGeneratedColumn()
-  id: string;
-
-  @Column()
-  url: string;
-
-  @Column()
-  title: string;
-
-  @Column()
-  description: string;
-
-  @Column()
-  createdAt: Date;
-
-  @Column()
-  updatedAt: Date;
-}
+export class Videos extends CommonEntity {}

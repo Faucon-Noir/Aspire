@@ -1,74 +1,58 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UnauthorizedError,
-} from "routing-controllers";
+import { Controller, Get, Param, Patch } from "routing-controllers";
 import { AppDataSource } from "../db/data-source";
 import { Users } from "../entities/User";
-import { LoginDTO, UpdateUserDTO, UserDTO } from "../dto/userDto";
-import { ErrorDTO } from "../dto/errorDto";
-import jwt from "jsonwebtoken";
+import { UpdateUserDTO, UserDTO } from "../dto/UserDto";
+import { ErrorDTO } from "../dto/ErrorDto";
+import { trace } from "@opentelemetry/api";
 
 @Controller()
 export class UserController {
-  constructor(private UserController) {
-    this.UserController = AppDataSource.getRepository(Users);
-  }
-  @Get("/photos/:id")
-  /**
-   * Retrieves a single user
-   * @param id - The ID of the user entity to retrieve
-   * @returns The detailed user object
-   */
-  public async getOneUser(
-    @Param("id") id: string
-  ): Promise<UserDTO | ErrorDTO> {
-    try {
-      const user = await this.UserController.findOne({ where: { id } });
-      if (!user) throw new Error("User not found");
-    } catch (err) {
-      return { error: err };
-    }
-  }
+	constructor(private UserController) {
+		this.UserController = AppDataSource.getRepository(Users);
+	}
+	tracer = trace.getTracer("portfolio-api");
 
-  @Patch("/user/:id")
-  /**
-   * @param id - The ID of the user entity to update
-   * @param user - The updated user object
-   * @returns The updated user object
-   */
-  public async updateUser(
-    @Param("id") id: string,
-    user: UserDTO
-  ): Promise<UpdateUserDTO | ErrorDTO> {
-    try {
-      const updatedUser = await this.UserController.update(id, user);
-      return updatedUser;
-    } catch (err) {
-      return { error: err };
-    }
-  }
+	@Get("/user/:id")
+	/**
+	 * Retrieves a single user
+	 * @param id - The ID of the user entity to retrieve
+	 * @returns The detailed user object
+	 */
+	public async getOneUser(
+		@Param("id") id: string
+	): Promise<UserDTO | ErrorDTO> {
+		const span = this.tracer.startSpan("getOneUser");
+		try {
+			const user = await this.UserController.findOne({ where: { id } });
+			if (!user) throw new Error("User not found");
+			span.setAttribute("user", JSON.stringify(user));
+			span.end();
+		} catch (err) {
+			span.setAttribute("error", err.message);
+			span.end();
+			return { error: err };
+		}
+	}
 
-  @Post("/login")
-  /**
-   * Logs in a user
-   * @param body - The user object to log in
-   * @returns A token expiring in 24 hours
-   */
-  async login(@Body() body: LoginDTO) {
-    const { username, password } = body;
-
-    const user = await this.UserController.findOne({ where: { username } });
-    if (!user || user.password !== password) {
-      throw new UnauthorizedError("Invalid username or password");
-    }
-    const token = jwt.sign({ id: user.id }, "your-secret-key", {
-      expiresIn: "24h",
-    });
-    return { token };
-  }
+	@Patch("/user/:id")
+	/**
+	 * @param id - The ID of the user entity to update
+	 * @param user - The updated user object
+	 * @returns The updated user object
+	 */
+	public async updateUser(
+		@Param("id") id: string,
+		user: UserDTO
+	): Promise<UpdateUserDTO | ErrorDTO> {
+		const span = this.tracer.startSpan("updateUser");
+		try {
+			const updatedUser = await this.UserController.update(id, user);
+			if (!updatedUser) throw new Error("User not found");
+			span.setAttribute("user", JSON.stringify(updatedUser));
+			span.end();
+			return updatedUser;
+		} catch (err) {
+			return { error: err };
+		}
+	}
 }

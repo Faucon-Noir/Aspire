@@ -24,35 +24,41 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({ secret: "secret", saveUninitialized: true, resave: true }));
 
-try {
-  const connected = AppDataSource.initialize();
-  if (connected) {
-    console.log("Database connection established");
-  }
-} catch (error) {
-  console.log("Database connection failed", error);
-}
 const provider = new NodeTracerProvider({
-  resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: "portfolio-api",
-  }),
+	resource: new Resource({
+		[SemanticResourceAttributes.SERVICE_NAME]: "portfolio-api",
+	}),
 });
 provider.addSpanProcessor(
-  new SimpleSpanProcessor(new CollectorTraceExporter())
+	new SimpleSpanProcessor(new CollectorTraceExporter())
 );
 provider.register();
 const tracer = provider.getTracer("portfolio-api");
+const span = tracer.startSpan("database-initialization");
+
+try {
+	const connected = AppDataSource.initialize();
+	if (connected) {
+		console.log("Database connection established");
+		span.setAttribute("database-initialization-success", true);
+	}
+	span.end();
+} catch (error) {
+	console.log("Database connection failed", error);
+	span.setAttribute("database-initialization-success", false);
+	span.end();
+}
 
 const controllerPath = path.resolve("src", "controller", "*.ts");
 
 useExpressServer(app, {
-  defaultErrorHandler: true,
-  routePrefix: "/portfolio-api",
-  controllers: [controllerPath],
+	defaultErrorHandler: true,
+	routePrefix: "/portfolio-api",
+	controllers: [controllerPath],
 });
 
 let server = app.listen(PORT, () => {
-  return console.log(`Server is running on http://localhost:${PORT}`);
+	return console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 export { app };

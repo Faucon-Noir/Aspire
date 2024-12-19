@@ -1,5 +1,6 @@
 export interface CommonDTO {
-  url: string;
-  title: string;
-  description: string;
+    url: string;
+    title: string;
+    owner: string;
+    description: string;
 }

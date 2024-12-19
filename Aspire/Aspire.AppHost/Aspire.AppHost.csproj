@@ -10,7 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="8.0.0" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RedirectAPI\RedirectAPI.csproj" />
   </ItemGroup>
 
 </Project>

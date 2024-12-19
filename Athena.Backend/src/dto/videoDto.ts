@@ -1,16 +1,12 @@
-import { CommonDTO } from "./commonDto";
+import { CommonDTO } from './CommonDto';
 
 // Get one and all
 export interface VideoDTO extends CommonDTO {
-  id: string;
+    id: string;
 }
 
 // Create
 export interface CreateVideoDTO extends CommonDTO {}
 
 // Update
-export interface UpdateVideoDTO {
-  url?: string;
-  title?: string;
-  description?: string;
-}
+export interface UpdateVideoDTO extends Partial<CommonDTO> {}

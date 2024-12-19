@@ -1,20 +1,7 @@
-export interface CreateUserDTO {
-  username: string;
-  email: string;
-  password: string;
+import { RegisterDTO } from './AuthDto';
+
+export interface UserDTO extends RegisterDTO {
+    id: string;
 }
 
-export interface UserDTO extends CreateUserDTO {
-  id: string;
-}
-
-export interface UpdateUserDTO {
-  username?: string;
-  email?: string;
-  password?: string;
-}
-
-export interface LoginDTO {
-  username: string;
-  password: string;
-}
+export interface UpdateUserDTO extends Partial<RegisterDTO> {}
